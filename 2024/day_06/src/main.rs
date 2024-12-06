@@ -1,7 +1,6 @@
+use std::collections::HashSet;
 use std::fmt;
 use std::fs;
-use std::collections::HashSet;
-
 
 #[derive(Clone, Copy, Hash, Eq, PartialEq)]
 struct Coord {
@@ -116,5 +115,50 @@ fn main() {
 
     println!("Part 1: {}", set.len());
 
+    let mut total = 0;
 
+    for new_obstacle in set {
+
+        // If this new obstacle is either the starting position or already an obstacle, skip
+        if obstacles.contains(&new_obstacle) || new_obstacle == starting_position {
+            continue;
+        }
+
+        path = Vec::new();
+        path.push(starting_position);
+
+        direction = Direction::Up;
+
+        loop {
+            let mut pos: Coord = *path.last().unwrap();
+            pos.advance(&direction);
+
+            // check if position is an obstacle, change direction
+            if obstacles.contains(&pos) || pos == new_obstacle {
+                direction = direction.change_direction();
+                continue;
+            }
+
+            // check if position is out of bounds
+            if pos.x >= rows[0].len() as i32
+                || pos.x < 0
+                || pos.y >= rows.len() as i32
+                || pos.y < 0
+            {
+                println!("Leaving the map at {}", pos);
+                break;
+            }
+
+            // assume if the path is as big as the map, we have the guard in a loop
+            if path.len() > (rows[0].len() * rows[0].len()) {
+                println!("We are in a loop");
+                total += 1;
+                break;
+            }
+
+            path.push(pos);
+        }
+    }
+
+    println!("Part 2: {}", total);
 }
